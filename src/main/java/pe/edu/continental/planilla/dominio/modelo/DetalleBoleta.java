@@ -1,6 +1,6 @@
 package pe.edu.continental.planilla.dominio.modelo;
 
-import pe.edu.continental.planilla.dominio.TipoConcepto.excepcion.ReglaPlanillaException;
+import pe.edu.continental.planilla.dominio.excepcion.ReglaPlanillaException;
 
 import java.math.BigDecimal;
 

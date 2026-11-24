@@ -1,6 +1,6 @@
 package pe.edu.continental.planilla.dominio.modelo;
 
-import pe.edu.continental.planilla.dominio.TipoConcepto.excepcion.AsistenciaInvalidaException;
+import pe.edu.continental.planilla.dominio.excepcion.AsistenciaInvalidaException;
 
 public record AsistenciaMensual(
         Long idAsistencia,

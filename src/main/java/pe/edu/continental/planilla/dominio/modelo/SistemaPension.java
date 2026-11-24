@@ -1,6 +1,6 @@
 package pe.edu.continental.planilla.dominio.modelo;
 
-import pe.edu.continental.planilla.dominio.TipoConcepto.excepcion.DatoInvalidoException;
+import pe.edu.continental.planilla.dominio.excepcion.DatoInvalidoException;
 
 public record SistemaPension(Long idSistemaPension, String nombre, TipoSistemaPension tipo) {
     public SistemaPension {

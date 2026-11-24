@@ -1,6 +1,6 @@
 package pe.edu.continental.planilla.dominio.modelo;
 
-import pe.edu.continental.planilla.dominio.TipoConcepto.excepcion.DatoInvalidoException;
+import pe.edu.continental.planilla.dominio.excepcion.DatoInvalidoException;
 
 public record PeriodoPlanilla(Long idPeriodo, int anio, int mes, EstadoPeriodo estado) {
     public PeriodoPlanilla {

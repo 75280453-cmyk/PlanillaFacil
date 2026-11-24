@@ -1,6 +1,6 @@
 package pe.edu.continental.planilla.dominio.modelo;
 
-import pe.edu.continental.planilla.dominio.TipoConcepto.excepcion.TrabajadorInvalidoException;
+import pe.edu.continental.planilla.dominio.excepcion.TrabajadorInvalidoException;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
