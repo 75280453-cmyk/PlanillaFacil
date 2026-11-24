@@ -1,4 +1,4 @@
-# Pruebas del cálculo de planilla
+## 1. Pruebas del cálculo de planilla
 
 Objetivo específico 5: verificar la exactitud de los cálculos comparándolos
 con cálculos hechos a mano.
@@ -28,3 +28,34 @@ Process finished with exit code 0
 
 Test en verde
 ![img.png](img.png)
+
+
+## 2. Servicio de planilla (ServicioPlanillaTest)
+
+| N° | Caso | Esperado | Resultado |
+|---|---|---|---|
+| 8 | Planilla con 1 trabajador AFP y 1 ONP, sin asistencia registrada | Netos S/ 2,612.40 y S/ 2,610.00 | ✔ |
+| 9 | Asistencia registrada (2 faltas, 30 min) se aplica al cálculo | Descuentos S/ 567.20, neto S/ 2,432.80, EsSalud S/ 251.44 | ✔ |
+| 10 | Registrar asistencia dos veces el mismo mes | Se actualiza, no se duplica | ✔ |
+| 11 | Recalcular la planilla del mismo período | Sigue habiendo 1 boleta por trabajador | ✔ |
+| 12 | Resumen mensual (1 AFP + 1 ONP) | Remuneraciones 6,000.00; descuentos 777.60; neto 5,222.40; EsSalud 540.00 | ✔ |
+| 13 | Trabajador cesado | No genera boleta | ✔ |
+| 14 | Calcular planilla de período cerrado | Lanza `ReglaPlanillaException` | ✔ |
+| 15 | Registrar asistencia en período cerrado | Lanza `ReglaPlanillaException` | ✔ |
+| 16 | Asistencia de trabajador inexistente | Lanza `TrabajadorNoEncontradoException` | ✔ |
+| 17 | Calcular un período inexistente | Lanza `PeriodoNoEncontradoException` | ✔ |
+| 18 | Actualizar trabajador inexistente | Lanza `TrabajadorNoEncontradoException` | ✔ |
+| 19 | AFP sin tasa vigente | Lanza `ReglaPlanillaException` | ✔ |
+| 20 | Falta el parámetro EsSalud | Lanza `ReglaPlanillaException` | ✔ |
+
+## Salida de la ejecución
+
+Ejecutado en IntelliJ IDEA (JDK 26) con *Run All Tests*:
+
+```
+13 tests passed, 13 tests total, 1 sex 511 ms
+Process finished with exit code 0
+```
+
+## Evidencia
+![img_1.png](img_1.png)
