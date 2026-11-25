@@ -7,11 +7,10 @@ Proyecto final de Construcción de Software.
 
 | Integrante | Rol |
 |---|---|
-| Joe | Jefe de Proyecto y lógica de negocio |
-| Gabriel | Base de datos |
-| Miguel | Interfaz y pruebas |
+| Joe | Jefe de Proyecto, Ing.Senior y lógica de negocio |
 | Marina | Análisis y documentación |
-
+| Miguel | Base de datos |
+| Gabriel | Interfaz y pruebas |
 ## Arquitectura
 
 Por capas: `dominio` → `aplicacion` → `infraestructura`.
