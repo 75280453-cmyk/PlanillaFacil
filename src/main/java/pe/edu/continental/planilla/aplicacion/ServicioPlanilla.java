@@ -10,6 +10,7 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Function;
 
 public class ServicioPlanilla {
     public static final String COD_ONP = "ONP";
@@ -22,6 +23,7 @@ public class ServicioPlanilla {
     private final ParametroRepositorio parametros;
     private final BoletaRepositorio boletas;
     private final CalculadoraPlanilla calculadora;
+    private final UnidadDeTrabajo unidad;
     private final Clock reloj;
 
     public ServicioPlanilla(TrabajadorRepositorio trabajadores,
@@ -31,6 +33,7 @@ public class ServicioPlanilla {
                             ParametroRepositorio parametros,
                             BoletaRepositorio boletas,
                             CalculadoraPlanilla calculadora,
+                            UnidadDeTrabajo unidad,
                             Clock reloj) {
         this.trabajadores = trabajadores;
         this.periodos = periodos;
@@ -39,101 +42,110 @@ public class ServicioPlanilla {
         this.parametros = parametros;
         this.boletas = boletas;
         this.calculadora = calculadora;
+        this.unidad = unidad;
         this.reloj = reloj;
     }
 
     // ---------- Trabajadores (HU-01 a HU-04) ----------
 
     public Trabajador registrarTrabajador(Trabajador trabajador) {
-        return trabajadores.guardar(trabajador);
+        return unidad.ejecutar(() -> trabajadores.guardar(trabajador));
     }
 
     public Trabajador actualizarTrabajador(Trabajador trabajador) {
-        if (trabajador.idTrabajador() == null
-                || trabajadores.buscarPorId(trabajador.idTrabajador()).isEmpty()) {
-            throw new TrabajadorNoEncontradoException(trabajador.idTrabajador());
-        }
-        return trabajadores.guardar(trabajador);
+        return unidad.ejecutar(() -> {
+            if (trabajador.idTrabajador() == null
+                    || trabajadores.buscarPorId(trabajador.idTrabajador()).isEmpty()) {
+                throw new TrabajadorNoEncontradoException(trabajador.idTrabajador());
+            }
+            return trabajadores.guardar(trabajador);
+        });
     }
 
     public List<Trabajador> listarTrabajadoresActivos() {
-        return trabajadores.listarActivos();
+        return unidad.ejecutar(trabajadores::listarActivos);
     }
 
     // ---------- Asistencia (HU-05 a HU-07) ----------
 
     public AsistenciaMensual registrarAsistencia(Long idTrabajador, Long idPeriodo,
                                                  int diasFalta, int minutosTardanza) {
-        Trabajador trabajador = trabajadores.buscarPorId(idTrabajador)
-                .orElseThrow(() -> new TrabajadorNoEncontradoException(idTrabajador));
-        PeriodoPlanilla periodo = periodos.buscarPorId(idPeriodo)
-                .orElseThrow(() -> new PeriodoNoEncontradoException(idPeriodo));
+        return unidad.ejecutar(() -> {
+            Trabajador trabajador = trabajadores.buscarPorId(idTrabajador)
+                    .orElseThrow(() -> new TrabajadorNoEncontradoException(idTrabajador));
+            PeriodoPlanilla periodo = periodos.buscarPorId(idPeriodo)
+                    .orElseThrow(() -> new PeriodoNoEncontradoException(idPeriodo));
 
-        if (!periodo.estaAbierto()) {
-            throw new ReglaPlanillaException("El período está cerrado, no se puede registrar asistencia");
-        }
+            if (!periodo.estaAbierto()) {
+                throw new ReglaPlanillaException("El período está cerrado, no se puede registrar asistencia");
+            }
 
-        // si ya había registro de ese mes, se actualiza en vez de duplicar
-        Long idExistente = asistencias.buscar(idTrabajador, idPeriodo)
-                .map(AsistenciaMensual::idAsistencia)
-                .orElse(null);
+            // si ya había registro de ese mes, se actualiza en vez de duplicar
+            Long idExistente = asistencias.buscar(idTrabajador, idPeriodo)
+                    .map(AsistenciaMensual::idAsistencia)
+                    .orElse(null);
 
-        return asistencias.guardar(
-                new AsistenciaMensual(idExistente, trabajador, periodo, diasFalta, minutosTardanza));
+            return asistencias.guardar(
+                    new AsistenciaMensual(idExistente, trabajador, periodo, diasFalta, minutosTardanza));
+        });
     }
 
     // ---------- Cálculo de planilla (HU-10 a HU-13) ----------
 
     public List<BoletaPago> calcularPlanilla(Long idPeriodo) {
-        PeriodoPlanilla periodo = periodos.buscarPorId(idPeriodo)
-                .orElseThrow(() -> new PeriodoNoEncontradoException(idPeriodo));
-        if (!periodo.estaAbierto()) {
-            throw new ReglaPlanillaException("El período está cerrado, no se puede calcular");
-        }
-
-        LocalDate fechaEmision = LocalDate.now(reloj);
-        LocalDate fechaVigencia = LocalDate.of(periodo.anio(), periodo.mes(), 1);
-
-        BigDecimal pctOnp = porcentajeVigente(COD_ONP, fechaVigencia);
-        BigDecimal pctEssalud = porcentajeVigente(COD_ESSALUD, fechaVigencia);
-
-        boletas.eliminarPorPeriodo(idPeriodo);   // recalcular = reemplazar
-
-        List<BoletaPago> resultado = new ArrayList<>();
-        for (Trabajador trabajador : trabajadores.listarActivos()) {
-            // sin registro de asistencia = mes sin faltas ni tardanzas
-            AsistenciaMensual asistencia = asistencias.buscar(trabajador.idTrabajador(), idPeriodo)
-                    .orElseGet(() -> new AsistenciaMensual(null, trabajador, periodo, 0, 0));
-
-            TasaPension tasaAfp = null;
-            if (trabajador.sistemaPension().esAfp()) {
-                tasaAfp = tasas.buscarVigente(trabajador.sistemaPension(),
-                                trabajador.tipoComision(), fechaVigencia)
-                        .orElseThrow(() -> new ReglaPlanillaException(
-                                "No hay tasa vigente para " + trabajador.sistemaPension().nombre()
-                                        + " (" + trabajador.tipoComision() + ")"));
+        return unidad.ejecutar(() -> {
+            PeriodoPlanilla periodo = periodos.buscarPorId(idPeriodo)
+                    .orElseThrow(() -> new PeriodoNoEncontradoException(idPeriodo));
+            if (!periodo.estaAbierto()) {
+                throw new ReglaPlanillaException("El período está cerrado, no se puede calcular");
             }
 
-            BoletaPago boleta = calculadora.calcularBoleta(asistencia, tasaAfp,
-                    pctOnp, pctEssalud, fechaEmision);
-            resultado.add(boletas.guardar(boleta));
-        }
-        return resultado;
+            LocalDate fechaEmision = LocalDate.now(reloj);
+            LocalDate fechaVigencia = LocalDate.of(periodo.anio(), periodo.mes(), 1);
+
+            BigDecimal pctOnp = porcentajeVigente(COD_ONP, fechaVigencia);
+            BigDecimal pctEssalud = porcentajeVigente(COD_ESSALUD, fechaVigencia);
+
+            boletas.eliminarPorPeriodo(idPeriodo);   // recalcular = reemplazar
+
+            List<BoletaPago> resultado = new ArrayList<>();
+            for (Trabajador trabajador : trabajadores.listarActivos()) {
+                // sin registro de asistencia = mes sin faltas ni tardanzas
+                AsistenciaMensual asistencia = asistencias.buscar(trabajador.idTrabajador(), idPeriodo)
+                        .orElseGet(() -> new AsistenciaMensual(null, trabajador, periodo, 0, 0));
+
+                TasaPension tasaAfp = null;
+                if (trabajador.sistemaPension().esAfp()) {
+                    tasaAfp = tasas.buscarVigente(trabajador.sistemaPension(),
+                                    trabajador.tipoComision(), fechaVigencia)
+                            .orElseThrow(() -> new ReglaPlanillaException(
+                                    "No hay tasa vigente para " + trabajador.sistemaPension().nombre()
+                                            + " (" + trabajador.tipoComision() + ")"));
+                }
+
+                BoletaPago boleta = calculadora.calcularBoleta(asistencia, tasaAfp,
+                        pctOnp, pctEssalud, fechaEmision);
+                resultado.add(boletas.guardar(boleta));
+            }
+            return resultado;
+        });
     }
 
     // ---------- Reporte mensual (HU-16) ----------
 
     public ResumenPlanilla resumenMensual(Long idPeriodo) {
-        PeriodoPlanilla periodo = periodos.buscarPorId(idPeriodo)
-                .orElseThrow(() -> new PeriodoNoEncontradoException(idPeriodo));
-        List<BoletaPago> lista = boletas.listarPorPeriodo(idPeriodo);
+        return unidad.ejecutar(() -> {
+            PeriodoPlanilla periodo = periodos.buscarPorId(idPeriodo)
+                    .orElseThrow(() -> new PeriodoNoEncontradoException(idPeriodo));
+            List<BoletaPago> lista = boletas.listarPorPeriodo(idPeriodo);
 
-        return new ResumenPlanilla(
-                periodo.anio(), periodo.mes(), lista.size(),
-                sumar(lista, BoletaPago::remuneracionBruta),
-                sumar(lista, BoletaPago::totalDescuentos),
-                sumar(lista, BoletaPago::netoPagar),
-                sumar(lista, BoletaPago::aporteEssalud));
+            return new ResumenPlanilla(
+                    periodo.anio(), periodo.mes(), lista.size(),
+                    sumar(lista, BoletaPago::remuneracionBruta),
+                    sumar(lista, BoletaPago::totalDescuentos),
+                    sumar(lista, BoletaPago::netoPagar),
+                    sumar(lista, BoletaPago::aporteEssalud));
+        });
     }
 
     // ---------- Auxiliares ----------
@@ -144,8 +156,7 @@ public class ServicioPlanilla {
                 .valor();
     }
 
-    private BigDecimal sumar(List<BoletaPago> lista,
-                             java.util.function.Function<BoletaPago, BigDecimal> campo) {
+    private BigDecimal sumar(List<BoletaPago> lista, Function<BoletaPago, BigDecimal> campo) {
         return lista.stream().map(campo).reduce(BigDecimal.ZERO.setScale(2), BigDecimal::add);
     }
 }

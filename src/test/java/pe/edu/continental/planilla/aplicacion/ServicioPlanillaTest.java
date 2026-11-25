@@ -20,6 +20,7 @@ public class ServicioPlanillaTest {
     private final SistemaPension afp = new SistemaPension(1L, "AFP Integra", TipoSistemaPension.AFP);
     private final SistemaPension onp = new SistemaPension(2L, "ONP", TipoSistemaPension.ONP);
     private final Clock reloj = Clock.fixed(Instant.parse("2026-11-30T12:00:00Z"), ZoneOffset.UTC);
+    private final UnidadDeTrabajoEnMemoria unidad = new UnidadDeTrabajoEnMemoria();
 
     private RepositoriosEnMemoria.Trabajadores trabajadores;
     private RepositoriosEnMemoria.Periodos periodos;
@@ -53,7 +54,7 @@ public class ServicioPlanillaTest {
 
     private ServicioPlanilla crearServicio(RepositoriosEnMemoria.Tasas tasasAUsar) {
         return new ServicioPlanilla(trabajadores, periodos, asistencias, tasasAUsar,
-                parametros, boletas, new CalculadoraPlanilla(), reloj);
+                parametros, boletas, new CalculadoraPlanilla(), unidad, reloj);
     }
 
     private Trabajador nuevoAfp(String dni) {
@@ -197,10 +198,20 @@ public class ServicioPlanillaTest {
     @Test
     void sinParametroEssaludNoSePuedeCalcular() {
         ServicioPlanilla sinParametros = new ServicioPlanilla(trabajadores, periodos, asistencias, tasas,
-                new RepositoriosEnMemoria.Parametros(), boletas, new CalculadoraPlanilla(), reloj);
+                new RepositoriosEnMemoria.Parametros(), boletas, new CalculadoraPlanilla(), unidad, reloj);
         nuevoAfp("11111111");
 
         assertThrows(ReglaPlanillaException.class,
                 () -> sinParametros.calcularPlanilla(periodoNoviembre.idPeriodo()));
+    }
+
+    @Test
+    void calcularPlanillaSeEjecutaDentroDeLaUnidadDeTrabajo() {
+        nuevoAfp("11111111");
+        int antes = unidad.ejecuciones();
+
+        servicio.calcularPlanilla(periodoNoviembre.idPeriodo());
+
+        assertEquals(antes + 1, unidad.ejecuciones());
     }
 }
