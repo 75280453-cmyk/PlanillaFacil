@@ -1,0 +1,16 @@
+services:
+  bd:
+    image: postgres:17
+    container_name: planillafacil-bd
+    environment:
+      POSTGRES_DB: planillafacil
+      POSTGRES_USER: planilla
+      POSTGRES_PASSWORD: planilla_dev
+    ports:
+      - "5432:5432"
+    volumes:
+      - datos_bd:/var/lib/postgresql/data
+      - ./src/main/resources/db/esquema.sql:/docker-entrypoint-initdb.d/01-esquema.sql:ro
+
+volumes:
+  datos_bd: {}
