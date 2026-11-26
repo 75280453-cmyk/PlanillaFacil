@@ -43,3 +43,5 @@ build/
 .env
 application-local.properties
 *.pdf
+
+*.txt
