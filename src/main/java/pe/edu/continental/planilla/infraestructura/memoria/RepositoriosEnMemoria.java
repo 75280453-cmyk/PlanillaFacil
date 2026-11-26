@@ -38,6 +38,11 @@ public final class RepositoriosEnMemoria {
         public List<Trabajador> listarActivos() {
             return datos.values().stream().filter(Trabajador::estaActivo).toList();
         }
+
+        @Override
+        public Optional<Trabajador> buscarPorDni(String dni) {
+            return Optional.empty();
+        }
     }
 
     public static class Periodos implements PeriodoRepositorio {
@@ -56,7 +61,12 @@ public final class RepositoriosEnMemoria {
         public Optional<PeriodoPlanilla> buscarPorId(Long id) {
             return Optional.ofNullable(datos.get(id));
         }
+        @Override
+        public List<PeriodoPlanilla> listarTodos(){
+            return List.of();
+        }
     }
+
 
     public static class Asistencias implements AsistenciaRepositorio {
         private final Map<String, AsistenciaMensual> datos = new LinkedHashMap<>();
@@ -78,6 +88,11 @@ public final class RepositoriosEnMemoria {
         @Override
         public Optional<AsistenciaMensual> buscar(Long idTrabajador, Long idPeriodo) {
             return Optional.ofNullable(datos.get(clave(idTrabajador, idPeriodo)));
+        }
+
+        @Override
+        public List<AsistenciaMensual> listarPorPeriodo(Long idPeriodo) {
+            return List.of();
         }
     }
 
@@ -101,6 +116,26 @@ public final class RepositoriosEnMemoria {
                     .filter(t -> t.tipoComision() == tipoComision && t.vigenteEn(fecha))
                     .findFirst();
         }
+
+        @Override
+        public TasaPension guardar(TasaPension tasa) {
+            return null;
+        }
+
+        @Override
+        public Optional<TasaPension> buscarPorId(Long id) {
+            return Optional.empty();
+        }
+
+        @Override
+        public List<TasaPension> listarTodas() {
+            return List.of();
+        }
+
+        @Override
+        public List<SistemaPension> listarSistemasPension() {
+            return List.of();
+        }
     }
 
     public static class Parametros implements ParametroRepositorio {
@@ -114,6 +149,11 @@ public final class RepositoriosEnMemoria {
                     p.descripcion(), p.vigenteDesde());
             datos.add(guardado);
             return guardado;
+        }
+
+        @Override
+        public List<ParametroGeneral> listarTodos() {
+            return List.of();
         }
 
         @Override
@@ -146,6 +186,16 @@ public final class RepositoriosEnMemoria {
         @Override
         public void eliminarPorPeriodo(Long idPeriodo) {
             datos.removeIf(b -> b.periodo().idPeriodo().equals(idPeriodo));
+        }
+
+        @Override
+        public Optional<BoletaPago> buscarPorId(Long idBoleta) {
+            return Optional.empty();
+        }
+
+        @Override
+        public Optional<Empresa> obtenerEmpresa() {
+            return Optional.empty();
         }
     }
 }

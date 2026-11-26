@@ -49,7 +49,12 @@ public class ServicioPlanilla {
     // ---------- Trabajadores (HU-01 a HU-04) ----------
 
     public Trabajador registrarTrabajador(Trabajador trabajador) {
-        return unidad.ejecutar(() -> trabajadores.guardar(trabajador));
+        return unidad.ejecutar(() -> {
+            if (trabajadores.buscarPorDni(trabajador.dni()).isPresent()) {
+                throw new ReglaPlanillaException("Ya existe un trabajador registrado con el DNI " + trabajador.dni());
+            }
+            return trabajadores.guardar(trabajador);
+        });
     }
 
     public Trabajador actualizarTrabajador(Trabajador trabajador) {
@@ -58,6 +63,11 @@ public class ServicioPlanilla {
                     || trabajadores.buscarPorId(trabajador.idTrabajador()).isEmpty()) {
                 throw new TrabajadorNoEncontradoException(trabajador.idTrabajador());
             }
+            trabajadores.buscarPorDni(trabajador.dni())
+                    .filter(otro -> !otro.idTrabajador().equals(trabajador.idTrabajador()))
+                    .ifPresent(otro -> {
+                        throw new ReglaPlanillaException("Ya existe otro trabajador con el DNI " + trabajador.dni());
+                    });
             return trabajadores.guardar(trabajador);
         });
     }
@@ -145,6 +155,107 @@ public class ServicioPlanilla {
                     sumar(lista, BoletaPago::totalDescuentos),
                     sumar(lista, BoletaPago::netoPagar),
                     sumar(lista, BoletaPago::aporteEssalud));
+        });
+    }
+    // ---------- Períodos ----------
+
+    public PeriodoPlanilla abrirPeriodo(int anio, int mes) {
+        return unidad.ejecutar(() -> {
+            boolean yaExiste = periodos.listarTodos().stream()
+                    .anyMatch(p -> p.anio() == anio && p.mes() == mes);
+            if (yaExiste) {
+                throw new ReglaPlanillaException("Ya existe un período registrado para " + mes + "/" + anio);
+            }
+            return periodos.guardar(new PeriodoPlanilla(null, anio, mes, EstadoPeriodo.ABIERTO));
+        });
+    }
+
+    public List<PeriodoPlanilla> listarPeriodos() {
+        return unidad.ejecutar(periodos::listarTodos);
+    }
+
+    public PeriodoPlanilla cerrarPeriodo(Long idPeriodo) {
+        return unidad.ejecutar(() -> {
+            PeriodoPlanilla periodo = periodos.buscarPorId(idPeriodo)
+                    .orElseThrow(() -> new PeriodoNoEncontradoException(idPeriodo));
+            if (!periodo.estaAbierto()) {
+                throw new ReglaPlanillaException("El período ya se encuentra cerrado");
+            }
+            return periodos.guardar(
+                    new PeriodoPlanilla(periodo.idPeriodo(), periodo.anio(), periodo.mes(), EstadoPeriodo.CERRADO));
+        });
+    }
+
+    // ---------- Consultas y configuración (HU-03, HU-07, HU-08, HU-09, HU-15) ----------
+
+    public List<SistemaPension> listarSistemasPension() {
+        return unidad.ejecutar(tasas::listarSistemasPension);
+    }
+
+    public List<AsistenciaMensual> listarAsistencias(Long idPeriodo) {
+        return unidad.ejecutar(() -> {
+            if (periodos.buscarPorId(idPeriodo).isEmpty()) {
+                throw new PeriodoNoEncontradoException(idPeriodo);
+            }
+            return asistencias.listarPorPeriodo(idPeriodo);
+        });
+    }
+
+    public List<BoletaPago> listarBoletas(Long idPeriodo) {
+        return unidad.ejecutar(() -> {
+            if (periodos.buscarPorId(idPeriodo).isEmpty()) {
+                throw new PeriodoNoEncontradoException(idPeriodo);
+            }
+            return boletas.listarPorPeriodo(idPeriodo);
+        });
+    }
+
+    public record DatosBoletaPdf(BoletaPago boleta, Empresa empresa) {}
+
+    public DatosBoletaPdf obtenerDatosBoleta(Long idBoleta) {
+        return unidad.ejecutar(() -> {
+            BoletaPago boleta = boletas.buscarPorId(idBoleta)
+                    .orElseThrow(() -> new ReglaPlanillaException("No existe la boleta con id " + idBoleta));
+            boleta.detalles().size(); // carga los conceptos mientras la sesión JPA está abierta
+            Empresa empresa = boletas.obtenerEmpresa()
+                    .orElseGet(() -> new Empresa(null, "20601234567",
+                            "MI MICROEMPRESA S.A.C.", "Huancayo, Junín - Perú"));
+            return new DatosBoletaPdf(boleta, empresa);
+        });
+    }
+
+    public List<ParametroGeneral> listarParametros() {
+        return unidad.ejecutar(parametros::listarTodos);
+    }
+
+    public ParametroGeneral actualizarParametro(String codigo, BigDecimal nuevoValor, String nuevaDescripcion) {
+        return unidad.ejecutar(() -> {
+            if (codigo == null || codigo.isBlank()) {
+                throw new ReglaPlanillaException("El código del parámetro es obligatorio");
+            }
+            String codigoNormalizado = codigo.trim().toUpperCase();
+            ParametroGeneral actual = parametros.buscarVigente(codigoNormalizado, LocalDate.now(reloj))
+                    .orElseThrow(() -> new ReglaPlanillaException("No existe el parámetro " + codigoNormalizado));
+            String descripcionFinal = (nuevaDescripcion == null || nuevaDescripcion.isBlank())
+                    ? actual.descripcion()
+                    : nuevaDescripcion.trim();
+            return parametros.guardar(new ParametroGeneral(
+                    actual.idParametro(), actual.codigo(), nuevoValor, descripcionFinal, actual.vigenteDesde()));
+        });
+    }
+
+    public List<TasaPension> listarTasasPension() {
+        return unidad.ejecutar(tasas::listarTodas);
+    }
+
+    public TasaPension actualizarTasaPension(Long idTasa, BigDecimal pctAporte,
+                                             BigDecimal pctPrima, BigDecimal pctComision) {
+        return unidad.ejecutar(() -> {
+            TasaPension actual = tasas.buscarPorId(idTasa)
+                    .orElseThrow(() -> new ReglaPlanillaException("No existe la tasa de pensión con id " + idTasa));
+            return tasas.guardar(new TasaPension(
+                    actual.idTasa(), actual.sistemaPension(), actual.tipoComision(),
+                    pctAporte, pctPrima, pctComision, actual.vigenteDesde(), actual.vigenteHasta()));
         });
     }
 

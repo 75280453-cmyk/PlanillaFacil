@@ -59,3 +59,22 @@ Process finished with exit code 0
 
 ## Evidencia
 ![img_1.png](img_1.png)
+
+## 3. Prueba de Integració (PersistenciaJpaIT)
+Objetivo: verificar mediante **Testcontainers (PostgreSQL 17)** e **Hibernate ORM (`validate`)** que el mapeo de entidades coincide con `esquema.sql` y que las operaciones transaccionales persisten correctamente en base de datos real.
+
+### Hallazgo durante la validación de esquema
+
+* **Incidencia:** Al iniciar `FabricaPersistencia`, Hibernate lanzó `SchemaManagementException` porque `empresa.ruc` (`CHAR(11)`) y `trabajador.dni` (`CHAR(8)`) están definidos como `bpchar` en PostgreSQL, mientras que el mapeo por defecto de `String` esperaba `VARCHAR`.
+* **Solución:** Se agregó `@JdbcTypeCode(SqlTypes.CHAR)` en los atributos `ruc` (`Empresa.java`) y `dni` (`Trabajador.java`), manteniendo intacto `esquema.sql`.
+
+### Casos de prueba
+
+| N° | Caso | Esperado | Resultado |
+|---|---|---|---|
+| 21 | Guardar trabajador activo, actualizar otro a `CESADO` y listar activos | Retorna únicamente al trabajador activo | ✔ |
+| 22 | Calcular planilla con faltas/tardanzas y recalcular el mismo período | Persiste boletas y detalles; el recálculo reemplaza sin violar `UNIQUE (id_trabajador, id_periodo)` | ✔ |
+| 23 | Registrar asistencia o calcular planilla sobre un período `CERRADO` | Lanza `ReglaPlanillaException` y revierte la transacción | ✔ |
+
+Pruebas en rojo evidencia
+![img_2.png](img_2.png)

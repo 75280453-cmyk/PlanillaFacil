@@ -1,6 +1,8 @@
 package pe.edu.continental.planilla.dominio.modelo;
 
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import pe.edu.continental.planilla.dominio.excepcion.DatoInvalidoException;
 
 @Entity
@@ -12,6 +14,7 @@ public class Empresa {
     @Column(name = "id_empresa")
     private Long idEmpresa;
 
+    @JdbcTypeCode(SqlTypes.CHAR)
     @Column(name = "ruc", nullable = false, unique = true)
     private String ruc;
 

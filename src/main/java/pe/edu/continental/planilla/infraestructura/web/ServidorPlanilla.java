@@ -1,19 +1,25 @@
 package pe.edu.continental.planilla.infraestructura.web;
 
 import com.sun.net.httpserver.HttpServer;
-import pe.edu.continental.planilla.infraestructura.memoria.EntornoDemo;
+import jakarta.persistence.EntityManagerFactory;
+import pe.edu.continental.planilla.aplicacion.ServicioPlanilla;
+import pe.edu.continental.planilla.dominio.CalculadoraPlanilla;
+import pe.edu.continental.planilla.infraestructura.jpa.ConfiguracionBd;
+import pe.edu.continental.planilla.infraestructura.jpa.FabricaPersistencia;
+import pe.edu.continental.planilla.infraestructura.jpa.JpaUnidadDeTrabajo;
+import pe.edu.continental.planilla.infraestructura.jpa.RepositoriosJpa;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.time.Clock;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
 /**
- * Punto de entrada de la API web: enciende el servidor y lo deja atendiendo pedidos
- * hasta que se detiene el programa. Por ahora usa EntornoDemo (datos en memoria);
- * cuando llegue la base de datos, solo cambia con qué repositorios se arma el servicio.
+ * Punto de entrada de la API web: enciende el servidor conectado a PostgreSQL
+ * y lo deja atendiendo pedidos hasta que se detiene el programa.
  *
- * Para probar:  ejecutar main y abrir http://localhost:8080/api/trabajadores
+ * Para probar: levantar PostgreSQL y abrir http://localhost:8080/api/trabajadores
  */
 public final class ServidorPlanilla {
 
@@ -25,23 +31,36 @@ public final class ServidorPlanilla {
     }
 
     public static void main(String[] args) throws IOException {
-        EntornoDemo entorno = EntornoDemo.crear();
+        ConfiguracionBd config = ConfiguracionBd.desdeEntorno();
+        EntityManagerFactory fabrica = FabricaPersistencia.crear(config, false);
+        JpaUnidadDeTrabajo unidad = new JpaUnidadDeTrabajo(fabrica);
+
+        ServicioPlanilla servicio = new ServicioPlanilla(
+                new RepositoriosJpa.Trabajadores(unidad),
+                new RepositoriosJpa.Periodos(unidad),
+                new RepositoriosJpa.Asistencias(unidad),
+                new RepositoriosJpa.Tasas(unidad),
+                new RepositoriosJpa.Parametros(unidad),
+                new RepositoriosJpa.Boletas(unidad),
+                new CalculadoraPlanilla(),
+                unidad,
+                Clock.systemDefaultZone()
+        );
 
         HttpServer servidor = HttpServer.create(new InetSocketAddress(puerto()), 0);
-        servidor.setExecutor(Executors.newVirtualThreadPerTaskExecutor());   // un hilo liviano por pedido
-        new ApiPlanilla(entorno.servicio()).registrarEn(servidor);
+        servidor.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
+        new ApiPlanilla(servicio).registrarEn(servidor);
 
-        // Al detener el programa, se deja terminar los pedidos en curso antes de cerrar.
         Runtime.getRuntime().addShutdownHook(Thread.ofPlatform().unstarted(() -> {
             servidor.stop(SEGUNDOS_DE_GRACIA);
-            REGISTRO.info("Servidor detenido");
+            fabrica.close();
+            REGISTRO.info("Servidor y conexión a base de datos detenidos");
         }));
 
         servidor.start();
         REGISTRO.info("PlanillaFácil atendiendo en http://localhost:" + servidor.getAddress().getPort());
     }
 
-    /** Lee el puerto de la variable de entorno PUERTO; si no existe, usa 8080. */
     private static int puerto() {
         String valor = System.getenv("PUERTO");
         return valor == null || valor.isBlank() ? PUERTO_POR_DEFECTO : Integer.parseInt(valor);
