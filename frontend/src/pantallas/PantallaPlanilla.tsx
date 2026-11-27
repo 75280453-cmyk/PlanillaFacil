@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { AbrirPeriodo } from "../componentes/AbrirPeriodo";
+import { SelloCierrePeriodo } from "../componentes/SelloCierrePeriodo";
 import { TablaAsistencias } from "../componentes/TablaAsistencias";
 import { TablaBoletas } from "../componentes/TablaBoletas";
 import { TarjetasResumen } from "../componentes/TarjetasResumen";
@@ -23,9 +24,12 @@ export function PantallaPlanilla() {
   const [ocupado, setOcupado] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
+  const [mostrarNuevoPeriodo, setMostrarNuevoPeriodo] = useState(false);
+  const [periodoRecienSellado, setPeriodoRecienSellado] = useState<string | null>(null);
 
   const periodo = periodos.find((p) => p.idPeriodo === idPeriodo) ?? null;
   const cerrado = periodo?.estado === "CERRADO";
+  const hayAbierto = periodos.some((p) => p.estado === "ABIERTO");
 
   // 1) Al entrar: cargar períodos y trabajadores, y elegir el período más reciente.
   useEffect(() => {
@@ -65,6 +69,7 @@ export function PantallaPlanilla() {
   function periodoAbierto(nuevo: Periodo) {
     setPeriodos((actuales) => ordenar([...actuales, nuevo]));
     setIdPeriodo(nuevo.idPeriodo);
+    setMostrarNuevoPeriodo(false);
     setAviso(`Se abrió ${nombrePeriodo(nuevo.anio, nuevo.mes)}`);
   }
 
@@ -93,7 +98,9 @@ export function PantallaPlanilla() {
       const actualizado = await api.cerrarPeriodo(periodo.idPeriodo);
       setPeriodos((actuales) => actuales.map((p) => (p.idPeriodo === actualizado.idPeriodo ? actualizado : p)));
       setError(null);
-      setAviso(`Se cerró ${nombrePeriodo(actualizado.anio, actualizado.mes)}`);
+      const etiquetaMes = nombrePeriodo(actualizado.anio, actualizado.mes);
+      setAviso(`Se cerró ${etiquetaMes}`);
+      setPeriodoRecienSellado(etiquetaMes);
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -102,60 +109,84 @@ export function PantallaPlanilla() {
   }
 
   return (
-    <>
-      {error && <p className="error">{error}</p>}
-      {aviso && <p className="aviso">{aviso}</p>}
+      <>
+        {error && <p className="error">{error}</p>}
+        {aviso && <p className="aviso">{aviso}</p>}
 
-      <section className="bloque">
-        <h2>Período</h2>
-        <div className="en-linea">
-          {periodos.length > 0 && (
-            <label>
-              Período
-              <select value={idPeriodo ?? ""} onChange={(e) => { setAviso(null); setIdPeriodo(Number(e.target.value)); }}>
-                {periodos.map((p) => (
-                  <option key={p.idPeriodo} value={p.idPeriodo}>
-                    {nombrePeriodo(p.anio, p.mes)} ({p.estado === "ABIERTO" ? "abierto" : "cerrado"})
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-          {periodo && !cerrado && (
-            <button type="button" className="secundario" disabled={ocupado} onClick={cerrar}>
-              Cerrar período
-            </button>
-          )}
-          {periodo && <span className={`estado estado-${periodo.estado}`}>{periodo.estado}</span>}
-        </div>
-        <AbrirPeriodo alAbrir={periodoAbierto} />
-      </section>
+        <section className="bloque">
+          <h2>♦ Período Contable</h2>
+          <div className="en-linea">
+            {periodos.length > 0 && (
+                <select
+                    aria-label="Seleccionar período"
+                    value={idPeriodo ?? ""}
+                    onChange={(e) => {
+                      setAviso(null);
+                      setIdPeriodo(Number(e.target.value));
+                    }}
+                >
+                  {periodos.map((p) => (
+                      <option key={p.idPeriodo} value={p.idPeriodo}>
+                        {nombrePeriodo(p.anio, p.mes)} ({p.estado === "ABIERTO" ? "abierto" : "cerrado"})
+                      </option>
+                  ))}
+                </select>
+            )}
+            {periodo && !cerrado && (
+                <button type="button" className="secundario" disabled={ocupado} onClick={cerrar}>
+                  Cerrar período
+                </button>
+            )}
+            {periodo && <span className={`estado estado-${periodo.estado}`}>{periodo.estado}</span>}
 
-      {periodo && detalleListo && (
-        <>
-          <section className="bloque">
-            <h2>Asistencias de {nombrePeriodo(periodo.anio, periodo.mes)}</h2>
-            <TablaAsistencias idPeriodo={periodo.idPeriodo} cerrado={cerrado}
-                              trabajadores={trabajadores} asistencias={asistencias} />
-          </section>
+            {hayAbierto && (
+                <button
+                    type="button"
+                    className="secundario"
+                    onClick={() => setMostrarNuevoPeriodo((prev) => !prev)}
+                >
+                  {mostrarNuevoPeriodo ? "Ocultar formulario" : "+ Abrir otro mes"}
+                </button>
+            )}
+          </div>
 
-          <section className="bloque">
-            <h2>Planilla</h2>
-            <div className="en-linea">
-              <button type="button" disabled={cerrado || ocupado || trabajadores.length === 0} onClick={calcular}>
-                {ocupado ? "Calculando…" : boletas.length > 0 ? "Recalcular planilla" : "Calcular planilla"}
-              </button>
-              {!cerrado && <span className="nota">Si cambia las asistencias, vuelva a calcular.</span>}
-            </div>
-            {resumen && <TarjetasResumen resumen={resumen} />}
-            <TablaBoletas boletas={boletas} />
-          </section>
-        </>
-      )}
+          {(!hayAbierto || mostrarNuevoPeriodo) && <AbrirPeriodo alAbrir={periodoAbierto} />}
+        </section>
 
-      {periodos.length === 0 && !error && (
-        <p className="vacio">Todavía no hay períodos. Abra el del mes para empezar.</p>
-      )}
-    </>
+        {periodo && detalleListo && (
+            <>
+              <section className="bloque">
+                <h2>♠ Asistencias de {nombrePeriodo(periodo.anio, periodo.mes)}</h2>
+                <TablaAsistencias
+                    idPeriodo={periodo.idPeriodo}
+                    cerrado={cerrado}
+                    trabajadores={trabajadores}
+                    asistencias={asistencias}
+                />
+              </section>
+
+              <section className="bloque">
+                <h2>♥ Planilla y Boletas</h2>
+                <div className="en-linea">
+                  <button type="button" disabled={cerrado || ocupado || trabajadores.length === 0} onClick={calcular}>
+                    {ocupado ? "Calculando…" : boletas.length > 0 ? "Recalcular planilla" : "Calcular planilla"}
+                  </button>
+                  {!cerrado && <span className="nota">Si cambia las asistencias, vuelva a calcular.</span>}
+                </div>
+                {resumen && <TarjetasResumen resumen={resumen} />}
+                <TablaBoletas boletas={boletas} />
+              </section>
+            </>
+        )}
+
+        {periodos.length === 0 && !error && (
+            <p className="vacio">Todavía no hay períodos registrados. Abra el mes actual para comenzar.</p>
+        )}
+
+        <SelloCierrePeriodo
+            nombreMes={periodoRecienSellado}
+            alCerrar={() => setPeriodoRecienSellado(null)}
+        />
+      </>
   );
 }

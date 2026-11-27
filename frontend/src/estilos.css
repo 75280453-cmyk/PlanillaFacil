@@ -1,106 +1,1878 @@
 :root {
-  --verde: #1f5f4a;
-  --verde-oscuro: #174a3a;
-  --texto: #1d2a26;
-  --fondo: #f4f7f5;
-  --borde: #d5dfda;
-  --error: #b3261e;
-  --aviso: #1f6b3a;
+  --borgona: #6e1429;
+  --borgona-vivo: #941b37;
+  --borgona-oscuro: #3b0814;
+  --dorado: #d4af37;
+  --dorado-claro: #f3d37a;
+  --dorado-borde: rgba(212, 175, 55, 0.3);
+  --texto: #f5ebe0;
+  --texto-suave: #bda89e;
+  --fondo: #0b0507;
+  --superficie: #170b0f;
+  --superficie-elevada: #221016;
+  --borde: rgba(212, 175, 55, 0.22);
+  --error: #ff6b6b;
+  --aviso: #52d681;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
-  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   color: var(--texto);
-  background: var(--fondo);
+  background-color: var(--fondo);
+  background-image:
+          radial-gradient(circle at 50% -10%, rgba(148, 27, 55, 0.45) 0%, rgba(11, 5, 7, 0) 60%),
+          radial-gradient(circle at 85% 90%, rgba(110, 20, 41, 0.25) 0%, transparent 45%),
+          repeating-linear-gradient(
+                  45deg,
+                  rgba(212, 175, 55, 0.015) 0px,
+                  rgba(212, 175, 55, 0.015) 2px,
+                  transparent 2px,
+                  transparent 14px
+          );
+  min-height: 100vh;
+  overflow-x: hidden;
 }
 
-.pagina { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem 3rem; }
-h1 { color: var(--verde); margin: 0; }
-h2 { font-size: 1.1rem; margin: 0 0 .75rem; }
-
-.dos-columnas { display: grid; grid-template-columns: 1fr 340px; gap: 1.5rem; align-items: start; }
-@media (max-width: 900px) { .dos-columnas { grid-template-columns: 1fr; } }
-
-.tabla-contenedor { overflow-x: auto; background: #fff; border: 1px solid var(--borde); border-radius: 8px; }
-table { width: 100%; border-collapse: collapse; font-size: .92rem; }
-th, td { padding: .6rem .75rem; text-align: left; border-bottom: 1px solid var(--borde); white-space: nowrap; }
-th { background: #eaf1ee; font-weight: 600; }
-tr:last-child td { border-bottom: 0; }
-.numero { text-align: right; }
-.fila-activa { background: #eef7f2; }
-.vacio { color: #587068; }
-
-.etiqueta {
-  margin-left: .4rem; padding: .1rem .4rem; border-radius: 4px;
-  background: #e3efe9; color: var(--verde); font-size: .75rem; font-weight: 600;
+/* ---------- Cursor de Escenario y Ficha Casino ---------- */
+@media (pointer: fine) {
+  html,
+  body,
+  button,
+  a,
+  input,
+  select,
+  label {
+    cursor: none !important;
+  }
 }
 
-.formulario {
-  display: flex; flex-direction: column; gap: .75rem;
-  background: #fff; border: 1px solid var(--borde); border-radius: 8px; padding: 1rem;
+.cursor-foco {
+  position: fixed;
+  top: -180px;
+  left: -180px;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(
+          circle,
+          rgba(212, 175, 55, 0.09) 0%,
+          rgba(148, 27, 55, 0.05) 45%,
+          transparent 70%
+  );
+  pointer-events: none;
+  z-index: 1;
 }
-.formulario label { display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; font-weight: 600; }
-input, select {
-  font: inherit; padding: .45rem .55rem; border: 1px solid var(--borde); border-radius: 6px; background: #fff;
-}
-input:focus, select:focus { outline: 2px solid var(--verde); outline-offset: 0; }
 
-.acciones { display: flex; gap: .5rem; margin-top: .25rem; }
-button {
-  font: inherit; font-weight: 600; cursor: pointer; padding: .5rem .9rem;
-  border: 0; border-radius: 6px; background: var(--verde); color: #fff;
+.cursor-canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
 }
-button:hover { background: var(--verde-oscuro); }
-button:disabled { opacity: .6; cursor: default; }
-button.secundario { background: #fff; color: var(--verde); border: 1px solid var(--verde); padding: .3rem .7rem; }
-button.secundario:hover { background: #eef7f2; }
 
-.error { color: var(--error); font-weight: 600; margin: 0; }
-.aviso { color: var(--aviso); font-weight: 600; }
+.cursor-aro {
+  position: fixed;
+  top: -19px;
+  left: -19px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(212, 175, 55, 0.55);
+  box-shadow: 0 0 14px rgba(212, 175, 55, 0.22);
+  pointer-events: none;
+  z-index: 9998;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cursor-aro::after {
+  content: "";
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  border: 1px dashed rgba(243, 211, 122, 0.55);
+  animation: girarFicha 9s linear infinite;
+}
+
+.cursor-aro.activo {
+  border-color: var(--dorado-claro);
+  box-shadow: 0 0 22px rgba(243, 211, 122, 0.48);
+}
+
+.cursor-aro.activo::after {
+  animation-duration: 2.2s;
+}
+
+@keyframes girarFicha {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Puntero personalizado (la punta coincide con 0,0) */
+/* Guante blanco de mayordomo (la punta del dedo coincide con 0,0) */
+.cursor-puntero {
+  position: fixed;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: 10001;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.7));
+}
+
+.cursor-puntero .guante-normal {
+  display: block;
+  transform: translate(-12px, -4px);
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+.cursor-puntero .guante-senalar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-14px, -2px) scale(0.85);
+  opacity: 0;
+  transition: transform 0.18s ease, opacity 0.18s ease;
+}
+
+/* Al pasar sobre un botón o enlace: cambia a la mano señalando */
+.cursor-puntero.interactivo .guante-normal {
+  opacity: 0;
+  transform: translate(-12px, -4px) scale(0.85);
+}
+
+.cursor-puntero.interactivo .guante-senalar {
+  opacity: 1;
+  transform: translate(-14px, -2px) scale(1.06);
+}
+
+@media (pointer: coarse) {
+  .cursor-foco,
+  .cursor-canvas,
+  .cursor-aro,
+  .cursor-puntero {
+    display: none;
+  }
+}
+
+/* ---------- Estructura y Cabecera ---------- */
+.pagina {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.75rem 1.25rem 3.5rem;
+  animation: aparecerEscena 0.55s ease-out;
+}
+
+@keyframes aparecerEscena {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cabecera-teatro {
+  margin-bottom: 1.5rem;
+}
+
+.marca-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.subtitulo-teatro {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--dorado);
+  margin-bottom: 0.25rem;
+}
+
+h1 {
+  font-family: "Cinzel", "Playfair Display", Georgia, serif;
+  font-size: 2.25rem;
+  letter-spacing: 0.05em;
+  color: var(--dorado-claro);
+  margin: 0;
+  text-shadow: 0 2px 22px rgba(212, 175, 55, 0.3);
+}
+
+h2 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.22rem;
+  color: var(--dorado-claro);
+  margin: 0 0 0.85rem;
+  letter-spacing: 0.02em;
+}
+
+/* ---------- Ornamento Casino ---------- */
+.ornamento-casino {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 0.85rem 0 0.4rem;
+}
+
+.linea-dorada {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(212, 175, 55, 0.45),
+          transparent
+  );
+}
+
+.palos-poker {
+  font-size: 0.8rem;
+  letter-spacing: 0.2em;
+  color: var(--dorado);
+  opacity: 0.85;
+}
+
+/* ---------- Botón de música ---------- */
+.boton-musica {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(23, 11, 15, 0.9);
+  color: var(--texto-suave);
+  border: 1px solid var(--dorado-borde);
+  border-radius: 999px;
+  padding: 0.42rem 0.95rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  transition: all 0.25s ease;
+}
+
+.boton-musica:hover {
+  color: var(--dorado-claro);
+  border-color: var(--dorado);
+  background: var(--superficie-elevada);
+  transform: translateY(-1px);
+}
+
+.boton-musica.sonando {
+  color: var(--dorado-claro);
+  border-color: var(--dorado);
+  background: linear-gradient(135deg, var(--borgona-oscuro), var(--borgona));
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.28);
+}
+
+.icono-musica {
+  font-size: 1rem;
+  color: var(--dorado);
+}
 
 /* ---------- Pestañas ---------- */
-.pestanas { display: flex; gap: .25rem; margin: .75rem 0 1.25rem; border-bottom: 2px solid var(--borde); }
+.pestanas {
+  display: flex;
+  gap: 0.45rem;
+  margin: 0.8rem 0 1.4rem;
+  border-bottom: 1px solid var(--dorado-borde);
+}
+
 .pestanas button {
-  background: transparent; color: #587068; border-radius: 6px 6px 0 0; padding: .55rem 1rem;
-  border-bottom: 3px solid transparent; margin-bottom: -2px;
+  background: transparent;
+  color: var(--texto-suave);
+  border-radius: 8px 8px 0 0;
+  padding: 0.65rem 1.25rem;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  box-shadow: none;
+  transition: all 0.2s ease;
 }
-.pestanas button:hover { background: #eaf1ee; }
-.pestanas button.activa { color: var(--verde); border-bottom-color: var(--verde); }
 
-/* ---------- Planilla ---------- */
-.bloque { margin-bottom: 1.75rem; }
-.en-linea { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .75rem; margin-bottom: .75rem; }
-.en-linea label { display: flex; flex-direction: column; gap: .25rem; font-size: .85rem; font-weight: 600; }
-input.corto { width: 6.5rem; }
-.nota { color: #587068; font-size: .85rem; align-self: center; }
+.pestanas button::before {
+  display: none;
+}
 
-.estado { padding: .2rem .55rem; border-radius: 999px; font-size: .75rem; font-weight: 700; align-self: center; }
-.estado-ABIERTO { background: #e0f2e8; color: var(--aviso); }
-.estado-CERRADO { background: #ececec; color: #555; }
+.pestanas button:hover {
+  background: rgba(110, 20, 41, 0.28);
+  color: var(--texto);
+  transform: none;
+}
 
-.ok-fila, .error-fila { margin-left: .6rem; font-size: .85rem; font-weight: 600; }
-.ok-fila { color: var(--aviso); }
-.error-fila { color: var(--error); }
+.pestanas button.activa {
+  color: var(--dorado-claro);
+  background: linear-gradient(180deg, rgba(110, 20, 41, 0.38), rgba(23, 11, 15, 0.92));
+  border-color: var(--dorado-borde);
+  border-bottom-color: var(--dorado);
+}
 
-.tarjetas { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: .75rem; margin: .5rem 0 1rem; }
-.tarjeta { display: flex; flex-direction: column; gap: .25rem; background: #fff; border: 1px solid var(--borde); border-radius: 8px; padding: .75rem 1rem; }
-.tarjeta-titulo { font-size: .8rem; color: #587068; }
-.tarjeta-valor { font-size: 1.25rem; font-weight: 700; color: var(--verde); }
+/* ---------- Layout & Tablas ---------- */
+.dos-columnas {
+  display: grid;
+  grid-template-columns: 1fr 355px;
+  gap: 1.5rem;
+  align-items: start;
+}
 
-.acciones-fila { display: flex; gap: .4rem; align-items: center; }
+@media (max-width: 900px) {
+  .dos-columnas {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tabla-contenedor {
+  overflow-x: auto;
+  background: var(--superficie);
+  border: 1px solid var(--dorado-borde);
+  border-radius: 10px;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.5);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+th,
+td {
+  padding: 0.72rem 0.85rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+  white-space: nowrap;
+}
+
+th {
+  background: linear-gradient(180deg, #2d111a, #1f0b11);
+  color: var(--dorado-claro);
+  font-weight: 600;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+tbody tr:hover {
+  background-color: rgba(110, 20, 41, 0.26);
+}
+
+tr:last-child td {
+  border-bottom: 0;
+}
+
+.numero {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.fila-activa {
+  background: rgba(148, 27, 55, 0.3);
+}
+
+.vacio {
+  color: var(--texto-suave);
+  font-style: italic;
+}
+
+.etiqueta {
+  margin-left: 0.45rem;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(212, 175, 55, 0.16);
+  border: 1px solid rgba(212, 175, 55, 0.38);
+  color: var(--dorado-claro);
+  font-size: 0.73rem;
+  font-weight: 600;
+}
+
+/* ---------- Formularios e Inputs ---------- */
+.formulario {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  background: linear-gradient(180deg, var(--superficie-elevada), var(--superficie));
+  border: 1px solid var(--dorado-borde);
+  border-radius: 10px;
+  padding: 1.2rem;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.55);
+}
+
+/* Esquina decorativa tipo naipe en el formulario */
+.formulario::after {
+  content: "♦";
+  position: absolute;
+  top: 0.75rem;
+  right: 0.95rem;
+  font-size: 1.1rem;
+  color: var(--dorado);
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.formulario label,
+.en-linea label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--texto-suave);
+}
+
+input,
+select {
+  font: inherit;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 6px;
+  background: #0f0609;
+  color: var(--texto);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--dorado);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
+}
+
+/* ---------- Botones con Destello Metálico ---------- */
+.acciones {
+  display: flex;
+  gap: 0.55rem;
+  margin-top: 0.35rem;
+}
+
+button,
 .enlace-boton {
-  padding: .3rem .7rem; border-radius: 6px; background: var(--verde); color: #fff;
-  text-decoration: none; font-weight: 600; font-size: .9rem;
+  position: relative;
+  overflow: hidden;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.52rem 1.05rem;
+  border-radius: 6px;
+  background: linear-gradient(135deg, var(--borgona-vivo), var(--borgona));
+  color: var(--dorado-claro);
+  border: 1px solid rgba(212, 175, 55, 0.48);
+  box-shadow: 0 4px 15px rgba(110, 20, 41, 0.5);
+  transition: all 0.22s ease;
 }
-.enlace-boton:hover { background: var(--verde-oscuro); }
 
-.fila-detalle td { background: #f8fbf9; white-space: normal; }
-.detalles { list-style: none; margin: 0; padding: 0; display: grid; gap: .3rem; }
-.detalles li { display: grid; grid-template-columns: 1fr 10rem 8rem; gap: .5rem; font-size: .88rem; }
-.tipo { font-size: .75rem; font-weight: 700; }
-.tipo-INGRESO { color: var(--aviso); }
-.tipo-DESCUENTO { color: var(--error); }
-.tipo-APORTE_EMPLEADOR { color: #587068; }
+/* Reflejo dorado diagonal al pasar el mouse */
+button::before,
+.enlace-boton::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -120%;
+  width: 65%;
+  height: 100%;
+  background: linear-gradient(
+          120deg,
+          transparent,
+          rgba(243, 211, 122, 0.35),
+          transparent
+  );
+  transform: skewX(-22deg);
+  transition: left 0.55s ease;
+  pointer-events: none;
+}
+
+button:hover::before,
+.enlace-boton:hover::before {
+  left: 140%;
+}
+
+button:hover,
+.enlace-boton:hover {
+  background: linear-gradient(135deg, #ab2040, var(--borgona-vivo));
+  border-color: var(--dorado-claro);
+  transform: translateY(-1.5px);
+  box-shadow: 0 6px 22px rgba(212, 175, 55, 0.26);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+button:disabled::before {
+  display: none;
+}
+
+button.secundario {
+  background: rgba(23, 11, 15, 0.92);
+  color: var(--dorado-claro);
+  border: 1px solid var(--dorado-borde);
+  padding: 0.32rem 0.78rem;
+  box-shadow: none;
+}
+
+button.secundario:hover {
+  background: rgba(110, 20, 41, 0.38);
+  border-color: var(--dorado);
+}
+
+.enlace-boton {
+  padding: 0.32rem 0.78rem;
+  text-decoration: none;
+  font-size: 0.88rem;
+  display: inline-block;
+}
+
+.error {
+  color: var(--error);
+  font-weight: 600;
+  margin: 0;
+}
+
+.aviso {
+  color: var(--aviso);
+  font-weight: 600;
+}
+
+/* ---------- Planilla y Tarjetas estilo Naipes ---------- */
+.bloque {
+  margin-bottom: 1.85rem;
+}
+
+.en-linea {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.8rem;
+  margin-bottom: 0.85rem;
+}
+
+input.corto {
+  width: 6.5rem;
+}
+
+.nota {
+  color: var(--texto-suave);
+  font-size: 0.85rem;
+  align-self: center;
+}
+
+.estado {
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  align-self: center;
+}
+
+.estado-ABIERTO {
+  background: rgba(82, 214, 129, 0.14);
+  border: 1px solid rgba(82, 214, 129, 0.4);
+  color: var(--aviso);
+}
+
+.estado-CERRADO {
+  background: rgba(189, 168, 158, 0.14);
+  border: 1px solid rgba(189, 168, 158, 0.3);
+  color: var(--texto-suave);
+}
+
+.ok-fila,
+.error-fila {
+  margin-left: 0.6rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.ok-fila {
+  color: var(--aviso);
+}
+
+.error-fila {
+  color: var(--error);
+}
+
+.tarjetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 0.9rem;
+  margin: 0.7rem 0 1.25rem;
+}
+
+.tarjeta {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  background: linear-gradient(145deg, var(--superficie-elevada), var(--superficie));
+  border: 1px solid var(--dorado-borde);
+  border-radius: 10px;
+  padding: 0.95rem 1.1rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+  transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), border-color 0.24s ease, box-shadow 0.24s ease;
+}
+
+/* Reflejo especular dorado que sigue el mouse sobre la carta */
+.tarjeta::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+          circle 140px at var(--brillo-x, 50%) var(--brillo-y, 50%),
+          rgba(243, 211, 122, 0.22),
+          transparent 75%
+  );
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.tarjeta.activa-3d {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  border-color: var(--dorado-claro);
+  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.65), 0 0 22px rgba(212, 175, 55, 0.26);
+}
+
+.tarjeta.activa-3d::before {
+  opacity: 1;
+}
+
+/* Marca de agua de los 4 palos de poker en cada tarjeta de resumen */
+.tarjeta::after {
+  position: absolute;
+  right: 0.65rem;
+  bottom: -0.35rem;
+  font-size: 2.7rem;
+  line-height: 1;
+  color: var(--dorado);
+  opacity: 0.08;
+  pointer-events: none;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.tarjeta:nth-child(1)::after {
+  content: "♠";
+}
+.tarjeta:nth-child(2)::after {
+  content: "♦";
+}
+.tarjeta:nth-child(3)::after {
+  content: "♣";
+}
+.tarjeta:nth-child(4)::after {
+  content: "♥";
+}
+.tarjeta:nth-child(5)::after {
+  content: "★";
+}
+
+.tarjeta:hover::after {
+  opacity: 0.22;
+  transform: scale(1.1);
+}
+
+.tarjeta-titulo {
+  font-size: 0.77rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--texto-suave);
+}
+
+.tarjeta-valor {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 1.42rem;
+  font-weight: 700;
+  color: var(--dorado-claro);
+}
+
+.acciones-fila {
+  display: flex;
+  gap: 0.45rem;
+  align-items: center;
+}
+
+.fila-detalle td {
+  background: #12070a;
+  white-space: normal;
+  border-top: 1px dashed var(--dorado-borde);
+}
+
+.detalles {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.detalles li {
+  display: grid;
+  grid-template-columns: 1fr 10rem 8rem;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+}
+
+.tipo {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.tipo-INGRESO {
+  color: var(--aviso);
+}
+
+.tipo-DESCUENTO {
+  color: var(--error);
+}
+
+.tipo-APORTE_EMPLEADOR {
+  color: var(--dorado);
+}
+
+/* ---------- Telón Teatral de Bienvenida ---------- */
+.telon-contenedor {
+  position: fixed;
+  inset: 0;
+  z-index: 9500;
+  pointer-events: none;
+  display: flex;
+  overflow: hidden;
+}
+
+.telon-hoja {
+  position: relative;
+  width: 50%;
+  height: 100%;
+  background-color: #4a0b1a;
+  background-image: repeating-linear-gradient(
+          90deg,
+          rgba(22, 3, 8, 0.55) 0px,
+          rgba(110, 20, 41, 0.25) 18px,
+          rgba(155, 29, 58, 0.2) 34px,
+          rgba(22, 3, 8, 0.6) 52px
+  );
+  box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.75);
+  transition: transform 1.25s cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+.telon-izquierda {
+  border-right: 3px solid var(--dorado);
+}
+
+.telon-derecha {
+  border-left: 3px solid var(--dorado);
+}
+
+.telon-fleco {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 10px;
+  background: repeating-linear-gradient(
+          180deg,
+          var(--dorado-claro) 0px,
+          var(--dorado) 4px,
+          #7a5a12 7px
+  );
+  opacity: 0.85;
+}
+
+.telon-izquierda .telon-fleco {
+  right: 0;
+}
+
+.telon-derecha .telon-fleco {
+  left: 0;
+}
+
+.telon-sello {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 1.4rem 2.4rem;
+  background: radial-gradient(circle, #240c13 0%, #120508 100%);
+  border: 2px solid var(--dorado);
+  border-radius: 12px;
+  box-shadow:
+          0 0 40px rgba(0, 0, 0, 0.85),
+          0 0 25px rgba(212, 175, 55, 0.35);
+  text-align: center;
+  transition: opacity 0.45s ease, transform 0.55s ease;
+}
+
+.telon-sello .sello-palos {
+  color: var(--dorado);
+  font-size: 0.85rem;
+  letter-spacing: 0.25em;
+}
+
+.telon-sello strong {
+  font-family: "Cinzel", Georgia, serif;
+  font-size: 1.65rem;
+  letter-spacing: 0.1em;
+  color: var(--dorado-claro);
+}
+
+.telon-sello small {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--texto-suave);
+}
+
+/* Animación de apertura */
+.telon-contenedor.abriendo .telon-izquierda {
+  transform: translateX(-102%);
+}
+
+.telon-contenedor.abriendo .telon-derecha {
+  transform: translateX(102%);
+}
+
+.telon-contenedor.abriendo .telon-sello {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(1.08);
+}
+/* ---------- Marquesina de Teatro / Luces de Cabaret ---------- */
+.cabecera-teatro.marquesina {
+  background: linear-gradient(180deg, #240911 0%, #16060b 100%);
+  border: 1.5px solid var(--dorado);
+  border-radius: 14px;
+  padding: 0.65rem 1.15rem 0;
+  box-shadow:
+          0 12px 35px rgba(0, 0, 0, 0.65),
+          inset 0 0 28px rgba(148, 27, 55, 0.35);
+}
+
+.marquesina-interior {
+  padding: 0.55rem 0.35rem 0.25rem;
+}
+
+.fila-bombillas {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.2rem 0.4rem;
+}
+
+.bombilla {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fff4cc;
+  border: 1px solid var(--dorado);
+  box-shadow:
+          0 0 6px #ffd166,
+          0 0 12px rgba(212, 175, 55, 0.75);
+}
+
+.bombilla.par {
+  animation: titilarCabaret 1.6s ease-in-out infinite;
+}
+
+.bombilla.impar {
+  animation: titilarCabaret 1.6s ease-in-out infinite 0.8s;
+}
+
+@keyframes titilarCabaret {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1.08);
+    box-shadow:
+            0 0 8px #fff3c4,
+            0 0 16px rgba(243, 211, 122, 0.9);
+  }
+  50% {
+    opacity: 0.32;
+    transform: scale(0.88);
+    box-shadow: 0 0 2px rgba(212, 175, 55, 0.2);
+  }
+}
+
+.cabecera-teatro.marquesina .pestanas {
+  margin: 0.65rem -1.15rem 0;
+  padding: 0 1.15rem;
+  background: rgba(11, 5, 7, 0.45);
+  border-radius: 0 0 12px 12px;
+}
+
+@media (max-width: 600px) {
+  .bombilla:nth-child(even) {
+    display: none;
+  }
+}
+
+/* ---------- Notificaciones estilo Ticket VIP ---------- */
+.contenedor-tickets-vip {
+  position: fixed;
+  right: 1.35rem;
+  bottom: 1.35rem;
+  z-index: 9800;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  max-width: 340px;
+}
+
+.ticket-vip {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: stretch;
+  background: linear-gradient(135deg, #270b14 0%, #14060a 100%);
+  border: 1.5px solid var(--dorado);
+  border-radius: 10px;
+  box-shadow:
+          0 12px 30px rgba(0, 0, 0, 0.75),
+          0 0 18px rgba(212, 175, 55, 0.25);
+  animation: entrarTicketVIP 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.ticket-vip.error {
+  border-color: #ff5c77;
+  box-shadow:
+          0 12px 30px rgba(0, 0, 0, 0.75),
+          0 0 18px rgba(255, 92, 119, 0.3);
+}
+
+/* Muescas semicirculares laterales tipo boleto de teatro */
+.ticket-vip::before,
+.ticket-vip::after {
+  content: "";
+  position: absolute;
+  left: 50px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--fondo);
+  border: 1.5px solid var(--dorado);
+  z-index: 2;
+}
+
+.ticket-vip::before {
+  top: -7px;
+}
+
+.ticket-vip::after {
+  bottom: -7px;
+}
+
+.ticket-vip.error::before,
+.ticket-vip.error::after {
+  border-color: #ff5c77;
+}
+
+.ticket-talon {
+  width: 56px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  background: rgba(212, 175, 55, 0.12);
+  border-right: 1px dashed rgba(212, 175, 55, 0.45);
+  color: var(--dorado-claro);
+}
+
+.ticket-vip.error .ticket-talon {
+  background: rgba(255, 92, 119, 0.14);
+  border-right-color: rgba(255, 92, 119, 0.45);
+  color: #ff8599;
+}
+
+.ticket-talon span {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.ticket-talon small {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+.ticket-cuerpo {
+  padding: 0.72rem 0.95rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+}
+
+.ticket-cuerpo strong {
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+  color: var(--dorado-claro);
+}
+
+.ticket-vip.error .ticket-cuerpo strong {
+  color: #ff8599;
+}
+
+.ticket-cuerpo p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.35;
+  color: var(--texto);
+}
+
+.ticket-progreso {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 2.5px;
+  width: 100%;
+  background: linear-gradient(90deg, var(--dorado), var(--dorado-claro));
+  transform-origin: left;
+  animation: consumirTicket 4.2s linear forwards;
+}
+
+.ticket-vip.error .ticket-progreso {
+  background: #ff5c77;
+}
+
+@keyframes entrarTicketVIP {
+  from {
+    opacity: 0;
+    transform: translateX(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes consumirTicket {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/* ---------- Controles de Salón y Tema High Stakes (Losing Streak / Casino Art Déco) ---------- */
+.controles-salon {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.boton-escenario {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: rgba(23, 11, 15, 0.9);
+  color: var(--dorado-claro);
+  border: 1px solid var(--dorado-borde);
+  border-radius: 999px;
+  padding: 0.42rem 0.95rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  transition: all 0.25s ease;
+}
+
+.boton-escenario:hover {
+  border-color: var(--dorado);
+  background: var(--superficie-elevada);
+  transform: translateY(-1px);
+}
+
+.boton-escenario.modo-poker {
+  background: linear-gradient(135deg, #3b0718, #9c1137);
+  border-color: #f4a236;
+  color: #fff8ee;
+  box-shadow:
+          0 0 18px rgba(230, 25, 75, 0.45),
+          inset 0 0 10px rgba(244, 162, 54, 0.25);
+}
+
+.icono-escenario {
+  font-size: 1rem;
+  color: #f4a236;
+}
+
+/* Paleta Losing Streak: Carmesí Rubí, Ámbar Licor, Púrpura Humo y Marfil Naipe */
+body[data-escenario="poker"] {
+  --borgona: #9c1137;
+  --borgona-vivo: #d91c4e;
+  --borgona-oscuro: #240511;
+  --dorado: #f4a236;
+  --dorado-claro: #fff2dc;
+  --dorado-borde: rgba(244, 162, 54, 0.36);
+  --texto: #fdf6ec;
+  --texto-suave: #d4b5be;
+  --fondo: #0c0409;
+  --superficie: #180812;
+  --superficie-elevada: #240c1b;
+  --borde: rgba(230, 25, 75, 0.32);
+
+  background-color: #0c0409;
+  /* Focos de bar nocturno (carmesí + ámbar + humo púrpura) + trama geométrica Art Déco */
+  background-image:
+          radial-gradient(ellipse at 50% -12%, rgba(230, 25, 75, 0.42) 0%, transparent 55%),
+          radial-gradient(circle at 88% 18%, rgba(244, 162, 54, 0.16) 0%, transparent 40%),
+          radial-gradient(circle at 12% 85%, rgba(114, 18, 66, 0.35) 0%, transparent 50%),
+          radial-gradient(circle at 0 100%, transparent 24px, rgba(244, 162, 54, 0.035) 25px, rgba(244, 162, 54, 0.035) 26px, transparent 27px),
+          radial-gradient(circle at 100% 100%, transparent 24px, rgba(244, 162, 54, 0.035) 25px, rgba(244, 162, 54, 0.035) 26px, transparent 27px);
+  background-size:
+          100% 100%,
+          100% 100%,
+          100% 100%,
+          52px 52px,
+          52px 52px;
+}
+
+body[data-escenario="poker"] .cabecera-teatro.marquesina {
+  background: linear-gradient(180deg, #290819 0%, #14050e 100%);
+  border-color: #f4a236;
+  box-shadow:
+          0 14px 40px rgba(0, 0, 0, 0.85),
+          0 0 30px rgba(230, 25, 75, 0.3),
+          inset 0 0 35px rgba(217, 28, 78, 0.28);
+}
+
+body[data-escenario="poker"] .bombilla {
+  background: #ffe8c2;
+  border-color: #f4a236;
+  box-shadow:
+          0 0 8px #f4a236,
+          0 0 16px rgba(230, 25, 75, 0.85);
+}
+
+body[data-escenario="poker"] h1 {
+  color: #fff6e8;
+  text-shadow:
+          0 0 22px rgba(230, 25, 75, 0.75),
+          0 0 8px rgba(244, 162, 54, 0.45),
+          0 2px 10px rgba(0, 0, 0, 0.9);
+}
+
+body[data-escenario="poker"] .subtitulo-teatro {
+  color: #f4a236;
+}
+
+body[data-escenario="poker"] .palos-poker {
+  color: #ff4778;
+}
+
+body[data-escenario="poker"] .cursor-aro {
+  border-color: rgba(244, 162, 54, 0.8);
+  box-shadow: 0 0 18px rgba(230, 25, 75, 0.5);
+}
+
+body[data-escenario="poker"] .cursor-aro::after {
+  border-color: rgba(255, 71, 120, 0.85);
+}
+
+body[data-escenario="poker"] .cursor-foco {
+  background: radial-gradient(
+          circle,
+          rgba(244, 162, 54, 0.11) 0%,
+          rgba(230, 25, 75, 0.08) 45%,
+          transparent 70%
+  );
+}
+
+body[data-escenario="poker"] .tabla-contenedor,
+body[data-escenario="poker"] .formulario {
+  background: linear-gradient(180deg, #210a18 0%, #14060f 100%);
+  border-color: rgba(244, 162, 54, 0.3);
+}
+
+body[data-escenario="poker"] th {
+  background: linear-gradient(180deg, #380b23, #1e0613);
+  color: #ffd89c;
+}
+
+body[data-escenario="poker"] .tarjeta {
+  background: linear-gradient(145deg, #290c1d, #160610);
+  border-color: rgba(244, 162, 54, 0.35);
+}
+
+body[data-escenario="poker"] .tarjeta.activa-3d {
+  border-color: #f4a236;
+  box-shadow:
+          0 16px 34px rgba(0, 0, 0, 0.8),
+          0 0 26px rgba(230, 25, 75, 0.45);
+}
+
+/* ---------- Botón Flotante de Efectos de Sonido (Fichas y Cartas) ---------- */
+.boton-sfx-vip {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 9600;
+  padding: 0.42rem 0.78rem;
+  border-radius: 999px;
+  border: 1px solid var(--dorado);
+  background: rgba(20, 6, 10, 0.85);
+  color: var(--dorado-claro);
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.55);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.boton-sfx-vip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.45);
+}
+
+/* ---------- Limpieza del encabezado y ajuste del botón SFX ---------- */
+.marquesina > div:first-child:not(.marquesina-controles):not(.marquesina-titulo) {
+  display: none;
+}
+
+.boton-sfx-vip {
+  top: 1.25rem;
+  right: 1.25rem;
+}
+
+/* ==========================================================================
+   Boleta de Pago estilo Ticket VIP / Pase de Función
+   ========================================================================== */
+.ticket-vip-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(6, 2, 4, 0.82);
+  backdrop-filter: blur(6px);
+  animation: aparecerFondoTicket 0.22s ease-out;
+}
+
+@keyframes aparecerFondoTicket {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ticket-vip {
+  display: block;
+  position: relative;
+  width: 100%;
+  max-width: 540px;
+  border-radius: 16px;
+  border: 2px solid var(--dorado, #d4af37);
+  background: linear-gradient(165deg, #240912 0%, #120408 55%, #1d070e 100%);
+  color: #f7efe6;
+  box-shadow:
+          0 24px 60px rgba(0, 0, 0, 0.85),
+          0 0 28px rgba(212, 175, 55, 0.28),
+          inset 0 0 0 5px rgba(212, 175, 55, 0.14);
+  overflow: hidden;
+  animation: entrarTicketVIP 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+body[data-escenario="poker"] .ticket-vip {
+  background: linear-gradient(165deg, #0d2118 0%, #07120d 55%, #0c1d15 100%);
+}
+
+@keyframes entrarTicketVIP {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.ticket-muesca {
+  position: absolute;
+  top: 6.4rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(6, 2, 4, 0.95);
+  border: 2px solid var(--dorado, #d4af37);
+  z-index: 2;
+}
+
+.ticket-muesca.izquierda { left: -14px; }
+.ticket-muesca.derecha { right: -14px; }
+
+.ticket-cabecera {
+  display: block;
+  padding: 1.35rem 1.75rem 1rem;
+  text-align: center;
+}
+
+.ticket-etiqueta-superior {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: var(--dorado, #d4af37);
+  margin-bottom: 0.45rem;
+}
+
+.ticket-folio {
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.ticket-titular {
+  margin: 0.2rem 0;
+  font-size: 1.35rem;
+  color: var(--dorado-claro, #f6e094);
+  letter-spacing: 0.03em;
+}
+
+.ticket-subtitulo {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #bda99b;
+}
+
+.ticket-linea-troquelada {
+  border-top: 2px dashed rgba(212, 175, 55, 0.42);
+  margin: 0 1.25rem;
+}
+
+.ticket-cuerpo {
+  padding: 1.15rem 1.75rem;
+  max-height: 68vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--dorado, #d4af37) rgba(20, 6, 10, 0.6);
+}
+
+.ticket-cuerpo::-webkit-scrollbar {
+  width: 6px;
+}
+
+.ticket-cuerpo::-webkit-scrollbar-track {
+  background: rgba(20, 6, 10, 0.6);
+}
+
+.ticket-cuerpo::-webkit-scrollbar-thumb {
+  background: rgba(212, 175, 55, 0.55);
+  border-radius: 999px;
+}
+
+.ticket-seccion {
+  margin-bottom: 0.95rem;
+}
+
+.ticket-seccion h4 {
+  margin: 0 0 0.4rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--dorado, #d4af37);
+}
+
+.ticket-seccion ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.ticket-seccion li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.28rem 0;
+  font-size: 0.88rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ticket-seccion li .negativo {
+  color: #ff7b8e;
+}
+
+.ticket-totales-contenedor {
+  position: relative;
+  margin-top: 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 10px;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+.ticket-totales > div {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.86rem;
+  margin-bottom: 0.32rem;
+}
+
+.ticket-totales .ticket-neto {
+  margin-top: 0.55rem;
+  padding-top: 0.55rem;
+  border-top: 1px solid rgba(212, 175, 55, 0.4);
+  font-size: 1.08rem;
+  color: var(--dorado-claro, #f6e094);
+}
+
+.ticket-sello-vip {
+  position: absolute;
+  right: 1rem;
+  top: 0.65rem;
+  padding: 0.3rem 0.65rem;
+  border: 2px double rgba(246, 224, 148, 0.75);
+  border-radius: 6px;
+  color: rgba(246, 224, 148, 0.82);
+  text-align: center;
+  pointer-events: none;
+  transform: rotate(-11deg);
+  animation: estamparSello 0.42s cubic-bezier(0.22, 1, 0.36, 1) 0.15s both;
+}
+
+.ticket-sello-vip span {
+  display: block;
+  font-size: 0.76rem;
+  font-weight: bold;
+  letter-spacing: 0.14em;
+}
+
+.ticket-sello-vip small {
+  display: block;
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+}
+
+@keyframes estamparSello {
+  0% {
+    opacity: 0;
+    transform: rotate(-18deg) scale(2.1);
+  }
+  70% {
+    opacity: 0.95;
+    transform: rotate(-10deg) scale(0.95);
+  }
+  100% {
+    opacity: 0.85;
+    transform: rotate(-11deg) scale(1);
+  }
+}
+
+.ticket-pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.95rem 1.75rem 1.25rem;
+}
+
+.ticket-codigo-barras {
+  font-family: monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  color: rgba(212, 175, 55, 0.65);
+}
+
+.ticket-acciones {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .ticket-vip,
+  .ticket-vip * {
+    visibility: visible;
+  }
+  .ticket-vip {
+    position: fixed;
+    inset: 0;
+    margin: auto;
+    box-shadow: none;
+  }
+  .ticket-acciones {
+    display: none;
+  }
+}
+
+
+
+
+
+/* ==========================================================================
+   Marcador Mecánico / Tablero de Casino (TarjetasResumen)
+   ========================================================================== */
+.contador-casino {
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+  transition: transform 0.25s ease, text-shadow 0.35s ease;
+}
+
+.contador-casino.listo {
+  animation: destelloMarcador 0.45s ease-out;
+}
+
+@keyframes destelloMarcador {
+  0% {
+    transform: scale(1.06);
+    text-shadow: 0 0 14px rgba(246, 224, 148, 0.85);
+  }
+  100% {
+    transform: scale(1);
+    text-shadow: none;
+  }
+}
+
+.tarjeta-neto-vip {
+  border-color: var(--dorado, #d4af37) !important;
+  box-shadow:
+          0 8px 24px rgba(0, 0, 0, 0.5),
+          inset 0 0 18px rgba(212, 175, 55, 0.14);
+}
+
+
+
+/* ==========================================================================
+   Foco de Escenario (Spotlight teatral que sigue al cursor)
+   ========================================================================== */
+.foco-escenario {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9000;
+  background: radial-gradient(
+          420px circle at var(--foco-x, 50vw) var(--foco-y, 35vh),
+          rgba(246, 224, 148, 0.085),
+          rgba(212, 175, 55, 0.03) 40%,
+          transparent 70%
+  );
+  transition: opacity 0.3s ease;
+}
+
+body[data-escenario="poker"] .foco-escenario {
+  background: radial-gradient(
+          440px circle at var(--foco-x, 50vw) var(--foco-y, 35vh),
+          rgba(46, 204, 113, 0.09),
+          rgba(212, 175, 55, 0.035) 42%,
+          transparent 70%
+  );
+}
+
+
+
+
+
+/* ==========================================================================
+   Sello de Lacre / Firma del Director al Cerrar Planilla
+   ========================================================================== */
+.estado-CERRADO {
+  border-color: var(--dorado, #d4af37) !important;
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.25);
+}
+
+.sello-cierre-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9850;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  background: rgba(6, 2, 4, 0.84);
+  backdrop-filter: blur(6px);
+  animation: aparecerFondoTicket 0.22s ease-out;
+}
+
+.sello-cierre-acta {
+  display: block;
+  width: 100%;
+  max-width: 430px;
+  padding: 1.75rem 1.5rem;
+  border-radius: 16px;
+  border: 2px solid var(--dorado, #d4af37);
+  background: linear-gradient(170deg, #250912 0%, #120408 100%);
+  color: #f7efe6;
+  text-align: center;
+  box-shadow:
+          0 24px 55px rgba(0, 0, 0, 0.85),
+          0 0 30px rgba(212, 175, 55, 0.25),
+          inset 0 0 0 4px rgba(212, 175, 55, 0.14);
+}
+
+body[data-escenario="poker"] .sello-cierre-acta {
+  background: linear-gradient(170deg, #0e2219 0%, #07120d 100%);
+}
+
+.sello-cierre-ornamento {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.14em;
+  color: var(--dorado, #d4af37);
+  margin-bottom: 0.45rem;
+}
+
+.sello-cierre-acta h3 {
+  margin: 0.2rem 0 0.65rem;
+  font-size: 1.5rem;
+  color: var(--dorado-claro, #f6e094);
+}
+
+.sello-cierre-acta p {
+  margin: 0 auto 1.25rem;
+  font-size: 0.88rem;
+  color: #cbb8aa;
+  max-width: 34ch;
+}
+
+.sello-lacre-medallon {
+  width: 112px;
+  height: 112px;
+  margin: 0 auto 1.35rem;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #b81d39 0%, #6e0d20 75%, #470713 100%);
+  border: 3px solid var(--dorado, #d4af37);
+  box-shadow:
+          0 10px 25px rgba(0, 0, 0, 0.75),
+          0 0 22px rgba(212, 175, 55, 0.45),
+          inset 0 0 12px rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: estamparLacre 0.48s cubic-bezier(0.22, 1, 0.36, 1) 0.1s both;
+}
+
+body[data-escenario="poker"] .sello-lacre-medallon {
+  background: radial-gradient(circle at 35% 30%, #1e7d50 0%, #0e4229 75%, #072617 100%);
+}
+
+.sello-lacre-interior {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  border: 1.5px dashed var(--dorado-claro, #f6e094);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transform: rotate(-10deg);
+  color: var(--dorado-claro, #f6e094);
+}
+
+.sello-lacre-interior span {
+  font-size: 0.86rem;
+  font-weight: bold;
+  letter-spacing: 0.12em;
+}
+
+.sello-lacre-interior small {
+  font-size: 0.56rem;
+  letter-spacing: 0.1em;
+  opacity: 0.85;
+}
+
+@keyframes estamparLacre {
+  0% {
+    opacity: 0;
+    transform: scale(2.2) rotate(-25deg);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(0.94) rotate(4deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* ==========================================================================
+   Cartelera de Camerino / Pase de Backstage VIP (PantallaTrabajadores)
+   ========================================================================== */
+.fila-seleccionable {
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.credencial-vip-caja {
+  display: block;
+  margin-top: 1.35rem;
+  padding: 1.25rem 1.4rem;
+  border-radius: 14px;
+  border: 1.5px solid var(--dorado, #d4af37);
+  background: linear-gradient(155deg, rgba(42, 10, 20, 0.92) 0%, rgba(16, 4, 8, 0.96) 100%);
+  box-shadow:
+          0 14px 32px rgba(0, 0, 0, 0.55),
+          inset 0 0 0 4px rgba(212, 175, 55, 0.1);
+  animation: aparecerCredencial 0.28s ease-out;
+}
+
+body[data-escenario="poker"] .credencial-vip-caja {
+  background: linear-gradient(155deg, rgba(13, 35, 25, 0.94) 0%, rgba(7, 18, 13, 0.97) 100%);
+}
+
+@keyframes aparecerCredencial {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.credencial-vip-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px dashed rgba(212, 175, 55, 0.35);
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  color: var(--dorado, #d4af37);
+}
+
+.credencial-vip-id {
+  padding: 0.12rem 0.45rem;
+  border-radius: 4px;
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.credencial-vip-cuerpo {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  flex-wrap: wrap;
+}
+
+.credencial-vip-avatar {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  border: 1.5px solid var(--dorado, #d4af37);
+  background: radial-gradient(circle at 30% 25%, rgba(212, 175, 55, 0.25), rgba(0, 0, 0, 0.5));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--dorado-claro, #f6e094);
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.credencial-vip-palo {
+  position: absolute;
+  top: 3px;
+  right: 6px;
+  font-size: 0.72rem;
+  color: var(--dorado, #d4af37);
+}
+
+.credencial-vip-info {
+  flex: 1;
+  min-width: 180px;
+}
+
+.credencial-vip-cargo {
+  display: inline-block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--dorado, #d4af37);
+  margin-bottom: 0.2rem;
+}
+
+.credencial-vip-info h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  color: #f7efe6;
+}
+
+.credencial-vip-dni {
+  margin: 0.2rem 0 0;
+  font-size: 0.82rem;
+  color: #bba89b;
+}
+
+.credencial-vip-sueldo {
+  text-align: right;
+  padding: 0.55rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 175, 55, 0.32);
+  background: rgba(212, 175, 55, 0.08);
+}
+
+.credencial-vip-sueldo span {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #cbb8aa;
+}
+
+.credencial-vip-sueldo strong {
+  font-size: 1.1rem;
+  color: var(--dorado-claro, #f6e094);
+}
+
+.credencial-vip-pie {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.credencial-vip-datos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.1rem;
+  font-size: 0.82rem;
+  color: #d6c5b8;
+}
+
+.credencial-vip-datos strong {
+  color: var(--dorado, #d4af37);
+  font-weight: 600;
+}
