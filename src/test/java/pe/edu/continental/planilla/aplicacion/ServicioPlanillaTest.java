@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import pe.edu.continental.planilla.dominio.CalculadoraPlanilla;
 import pe.edu.continental.planilla.dominio.excepcion.ReglaPlanillaException;
 import pe.edu.continental.planilla.dominio.modelo.*;
+import pe.edu.continental.planilla.infraestructura.memoria.RepositoriosEnMemoria;
 
 import java.math.BigDecimal;
 import java.time.Clock;
