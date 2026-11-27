@@ -27,7 +27,7 @@ public class SistemaPension {
     private TipoSistemaPension tipo;
 
     protected SistemaPension() {
-        // exigido por JPA
+
     }
 
     public SistemaPension(Long idSistemaPension, String nombre, TipoSistemaPension tipo) {

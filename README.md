@@ -21,8 +21,8 @@ src/main/java/pe/edu/continental/planillafacil/
 │   ├── modelo/        records y enums
 │   ├── excepcion/     excepciones propias
 │   └── CalculadoraPlanilla.java
-├── aplicacion/        (en desarrollo)
-└── infraestructura/   (en desarrollo)
+├── aplicacion/        
+└── infraestructura/   
 ```
 
 ## Cómo ejecutar las pruebas
