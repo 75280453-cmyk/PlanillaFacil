@@ -1,3 +1,4 @@
+import { AnfitrionEscenario } from "./componentes/AnfitrionEscenario";
 import { useState } from "react";
 import { FocoEscenario } from "./componentes/FocoEscenario";
 import { CursorCabaret } from "./componentes/CursorCabaret";
@@ -18,6 +19,7 @@ export function App() {
 
   return (
       <>
+        <AnfitrionEscenario />
         <FocoEscenario />
         <TelonCabaret />
         <CursorCabaret />

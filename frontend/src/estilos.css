@@ -1876,3 +1876,223 @@ body[data-escenario="poker"] .credencial-vip-caja {
   color: var(--dorado, #d4af37);
   font-weight: 600;
 }
+
+
+
+/* ==========================================================================
+   Marcos Laterales Art Déco + Anfitrión VIP Interactivo
+   ========================================================================== */
+.marco-lateral {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 58px;
+  pointer-events: none;
+  z-index: 40;
+  background:
+          repeating-linear-gradient(
+                  90deg,
+                  rgba(212, 175, 55, 0.05) 0px,
+                  rgba(212, 175, 55, 0.05) 2px,
+                  transparent 2px,
+                  transparent 14px
+          ),
+          linear-gradient(180deg, rgba(120, 18, 42, 0.28) 0%, rgba(20, 5, 10, 0.12) 50%, rgba(120, 18, 42, 0.28) 100%);
+}
+
+.marco-izquierdo {
+  left: 0;
+  border-right: 1px solid rgba(212, 175, 55, 0.18);
+}
+
+.marco-derecho {
+  right: 0;
+  border-left: 1px solid rgba(212, 175, 55, 0.18);
+}
+
+body[data-escenario="poker"] .marco-lateral {
+  background:
+          repeating-linear-gradient(
+                  90deg,
+                  rgba(212, 175, 55, 0.06) 0px,
+                  rgba(212, 175, 55, 0.06) 2px,
+                  transparent 2px,
+                  transparent 14px
+          ),
+          linear-gradient(180deg, rgba(16, 92, 58, 0.28) 0%, rgba(6, 22, 15, 0.12) 50%, rgba(16, 92, 58, 0.28) 100%);
+}
+
+.anfitrion-escenario {
+  position: fixed;
+  right: 18px;
+  bottom: 0;
+  z-index: 8800;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  pointer-events: none;
+  animation: entradaAnfitrion 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes entradaAnfitrion {
+  from {
+    opacity: 0;
+    transform: translateY(45px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.anfitrion-globo {
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+  width: 265px;
+  margin-bottom: -52px; /* Baja el globo pegándolo justo sobre la cabeza */
+  margin-right: 16px;
+  padding: 0.78rem 0.95rem;
+  border-radius: 14px 14px 4px 14px;
+  border: 1.5px solid var(--dorado, #d4af37);
+  background: linear-gradient(165deg, rgba(38, 9, 18, 0.96), rgba(16, 4, 8, 0.98));
+  color: #f7efe6;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.7), 0 0 18px rgba(212, 175, 55, 0.2);
+  cursor: pointer;
+  animation: aparecerGlobo 0.3s ease-out;
+}
+
+body[data-escenario="poker"] .anfitrion-globo {
+  background: linear-gradient(165deg, rgba(12, 34, 24, 0.96), rgba(6, 17, 12, 0.98));
+}
+
+@keyframes aparecerGlobo {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.anfitrion-globo-cabecera {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--dorado, #d4af37);
+  margin-bottom: 0.3rem;
+}
+
+.anfitrion-globo p {
+  margin: 0;
+  font-size: 0.8rem;
+  line-height: 1.38;
+  color: #efe2d6;
+}
+
+.anfitrion-btn-cerrar {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: #cbb8aa !important;
+  padding: 0 4px !important;
+  font-size: 1rem !important;
+  line-height: 1 !important;
+  cursor: pointer;
+}
+
+.anfitrion-figura {
+  pointer-events: auto;
+  position: relative;
+  width: 280px;
+  height: 390px;
+  cursor: pointer;
+  transform-origin: bottom center;
+  filter: drop-shadow(0 12px 26px rgba(0, 0, 0, 0.8));
+}
+
+.anfitrion-figura.esta-saludando {
+  animation: balanceoSaludo 1.1s ease-in-out infinite alternate;
+}
+
+.anfitrion-figura.esta-reposo {
+  animation: respiracionAnfitrion 3.2s ease-in-out infinite;
+}
+
+@keyframes balanceoSaludo {
+  from {
+    transform: rotate(-1.6deg) translateY(0);
+  }
+  to {
+    transform: rotate(1.8deg) translateY(-3px);
+  }
+}
+
+@keyframes respiracionAnfitrion {
+  0%, 100% {
+    transform: scaleY(1) translateY(0);
+  }
+  50% {
+    transform: scaleY(1.012) translateY(-2px);
+  }
+}
+
+.anfitrion-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: bottom center;
+  transition: opacity 0.35s ease;
+  user-select: none;
+}
+
+.anfitrion-img.visible {
+  opacity: 1;
+}
+
+.anfitrion-img.oculta {
+  opacity: 0;
+}
+
+.anfitrion-ocultar,
+.anfitrion-minimizado {
+  pointer-events: auto;
+  position: fixed;
+  right: 18px;
+  bottom: 10px;
+  z-index: 8810;
+  padding: 0.32rem 0.7rem !important;
+  font-size: 0.72rem !important;
+  border-radius: 999px !important;
+  opacity: 0.82;
+}
+
+.anfitrion-ocultar:hover,
+.anfitrion-minimizado:hover {
+  opacity: 1;
+}
+
+@media (max-width: 1280px) {
+  .marco-lateral {
+    display: none;
+  }
+  .anfitrion-figura {
+    width: 210px;
+    height: 295px;
+  }
+}
+
+@media print {
+  .marco-lateral,
+  .anfitrion-escenario,
+  .anfitrion-minimizado {
+    display: none !important;
+  }
+}
